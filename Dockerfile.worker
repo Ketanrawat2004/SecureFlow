@@ -1,0 +1,26 @@
+# ==============================================================================
+# SECUREFLOW - Background Event Worker Dockerfile
+# Executes Kafka event consumers for audit, notifications, and analytics
+# ==============================================================================
+
+FROM python:3.13-slim AS runner
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY backend/app /app/app
+COPY workers /app/workers
+
+CMD ["python", "workers/audit_worker.py"]

@@ -1,0 +1,180 @@
+services:
+  # ============================================================================
+  # PostgreSQL Database
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: secureflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-secureflow_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secureflow_password}
+      POSTGRES_DB: ${POSTGRES_DB:-secureflow_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-secureflow_user} -d ${POSTGRES_DB:-secureflow_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - secureflow-net
+
+  # ============================================================================
+  # Redis - Caching & Sliding Window Rate Limiting
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: secureflow-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - secureflow-net
+
+  # ============================================================================
+  # Zookeeper & Apache Kafka - Domain Event Streaming
+  # ============================================================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: secureflow-zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - secureflow-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: secureflow-kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - secureflow-net
+
+  # ============================================================================
+  # FastAPI REST API Backend
+  # ============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: secureflow-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-secureflow_user}:${POSTGRES_PASSWORD:-secureflow_password}@postgres:5432/${POSTGRES_DB:-secureflow_db}
+      REDIS_URL: redis://redis:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-secureflow_super_secret_jwt_key_prod_2026_99a8b7c6}
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      CORS_ORIGINS: "http://localhost:3000,http://localhost"
+    networks:
+      - secureflow-net
+
+  # ============================================================================
+  # Background Workers
+  # ============================================================================
+  worker-audit:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: secureflow-worker-audit
+    restart: unless-stopped
+    command: ["python", "workers/audit_worker.py"]
+    depends_on:
+      - backend
+      - kafka
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-secureflow_user}:${POSTGRES_PASSWORD:-secureflow_password}@postgres:5432/${POSTGRES_DB:-secureflow_db}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - secureflow-net
+
+  worker-notification:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: secureflow-worker-notification
+    restart: unless-stopped
+    command: ["python", "workers/notification_worker.py"]
+    depends_on:
+      - backend
+      - kafka
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-secureflow_user}:${POSTGRES_PASSWORD:-secureflow_password}@postgres:5432/${POSTGRES_DB:-secureflow_db}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - secureflow-net
+
+  worker-analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: secureflow-worker-analytics
+    restart: unless-stopped
+    command: ["python", "workers/analytics_worker.py"]
+    depends_on:
+      - backend
+      - kafka
+      - redis
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-secureflow_user}:${POSTGRES_PASSWORD:-secureflow_password}@postgres:5432/${POSTGRES_DB:-secureflow_db}
+      REDIS_URL: redis://redis:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    networks:
+      - secureflow-net
+
+  # ============================================================================
+  # React + Vite Production Frontend
+  # ============================================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: secureflow-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - secureflow-net
+
+networks:
+  secureflow-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

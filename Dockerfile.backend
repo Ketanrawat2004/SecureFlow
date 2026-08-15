@@ -1,0 +1,53 @@
+# ==============================================================================
+# SECUREFLOW - Backend Production Dockerfile
+# Multi-stage build for minimal surface area and high security
+# ==============================================================================
+
+# Build Stage
+FROM python:3.13-slim AS builder
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Final Runtime Stage
+FROM python:3.13-slim AS runner
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed dependencies to global /usr/local
+COPY --from=builder /install /usr/local
+
+# Copy application source
+COPY backend/app /app/app
+
+# Non-root user for container security
+RUN adduser --disabled-password --gecos "" secureflow && \
+    chown -R secureflow:secureflow /app
+USER secureflow
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
