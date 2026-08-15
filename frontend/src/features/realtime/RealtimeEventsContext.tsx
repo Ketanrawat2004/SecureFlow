@@ -45,7 +45,8 @@ export const RealtimeEventsProvider: React.FC<{ children: React.ReactNode }> = (
         eventSourceRef.current.close();
       }
 
-      const streamUrl = `/api/v1/realtime/stream?token=${encodeURIComponent(token)}&org_id=${encodeURIComponent(activeOrgId)}`;
+      const apiBase = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      const streamUrl = `${apiBase}/realtime/stream?token=${encodeURIComponent(token)}&org_id=${encodeURIComponent(activeOrgId)}`;
       
       try {
         const es = new EventSource(streamUrl);

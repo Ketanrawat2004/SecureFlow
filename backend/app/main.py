@@ -155,15 +155,24 @@ app = FastAPI(
     description="Enterprise Access Management and Secure Workflow Governance API",
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    # Disable Swagger/ReDoc in production for reduced attack surface
+    docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
+    redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
+    openapi_url="/openapi.json" if settings.ENVIRONMENT != "production" else None,
 )
+
+# Build effective CORS origins — merge CORS_ORIGINS list with optional FRONTEND_URL
+_effective_cors_origins = list(settings.CORS_ORIGINS)
+if settings.FRONTEND_URL and settings.FRONTEND_URL not in _effective_cors_origins:
+    _effective_cors_origins.append(settings.FRONTEND_URL)
+    logger.info("CORS: Added FRONTEND_URL %s to allowed origins", settings.FRONTEND_URL)
+
+logger.info("CORS allowed origins: %s", _effective_cors_origins)
 
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=_effective_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

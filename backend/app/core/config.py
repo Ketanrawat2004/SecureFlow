@@ -31,12 +31,17 @@ class Settings(BaseSettings):
     # Network / Host
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    # Comma-separated list of allowed frontend origins.
+    # Production: set to https://your-frontend.onrender.com
+    # Docker local: http://localhost:3000 (set via CORS_ORIGINS in docker-compose)
     CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:5173",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
     ]
+    # Single canonical frontend URL — added to CORS list automatically when set
+    FRONTEND_URL: Optional[str] = None
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
