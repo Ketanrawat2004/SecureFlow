@@ -90,14 +90,15 @@ async def refresh_token_endpoint(refresh_token: str, db: AsyncSession = Depends(
 
 
 @router.get("/google/url", response_model=OAuthUrlResponse)
-async def get_google_oauth_url():
+async def get_google_oauth_url(redirect_uri: Optional[str] = None):
     """Generate Google OAuth 2.0 / OpenID Connect authorization URL."""
+    target_redirect_uri = redirect_uri or settings.OAUTH_REDIRECT_URI
     auth_url = (
         "https://accounts.google.com/o/oauth2/v2/auth?"
         f"client_id={settings.GOOGLE_CLIENT_ID}&"
         "response_type=code&"
         "scope=openid%20email%20profile&"
-        f"redirect_uri={settings.OAUTH_REDIRECT_URI}&"
+        f"redirect_uri={target_redirect_uri}&"
         "access_type=offline&"
         "state=secureflow-oauth-state"
     )
@@ -107,7 +108,9 @@ async def get_google_oauth_url():
 @router.post("/google/callback", response_model=Token)
 async def google_oauth_callback(req: GoogleCallbackRequest, db: AsyncSession = Depends(get_db)):
     """Exchange authorization code for token, verify OIDC userinfo, and log in."""
-    user, access_token, refresh_token = await auth_service.handle_google_sso(db, req.code, req.state)
+    user, access_token, refresh_token = await auth_service.handle_google_sso(
+        db, req.code, req.state, redirect_uri=req.redirect_uri
+    )
     return Token(
         access_token=access_token,
         refresh_token=refresh_token,

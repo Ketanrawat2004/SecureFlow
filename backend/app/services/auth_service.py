@@ -138,7 +138,9 @@ class AuthService:
         return user, access_token, refresh_token
 
     @staticmethod
-    async def handle_google_sso(db: AsyncSession, code: str, state: Optional[str] = None) -> Tuple[User, str, str]:
+    async def handle_google_sso(
+        db: AsyncSession, code: str, state: Optional[str] = None, redirect_uri: Optional[str] = None
+    ) -> Tuple[User, str, str]:
         """Exchange Google authorization code for token, verify OIDC profile, and link or create user."""
         email: Optional[str] = None
         full_name: Optional[str] = None
@@ -162,7 +164,7 @@ class AuthService:
                             "code": code,
                             "client_id": settings.GOOGLE_CLIENT_ID,
                             "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                            "redirect_uri": settings.OAUTH_REDIRECT_URI,
+                            "redirect_uri": redirect_uri or settings.OAUTH_REDIRECT_URI,
                             "grant_type": "authorization_code",
                         },
                     )

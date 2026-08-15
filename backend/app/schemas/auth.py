@@ -39,6 +39,7 @@ class DevLoginRequest(BaseModel):
 class GoogleCallbackRequest(BaseModel):
     code: str
     state: Optional[str] = None
+    redirect_uri: Optional[str] = None
 
 
 class OAuthUrlResponse(BaseModel):

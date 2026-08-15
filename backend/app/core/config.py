@@ -83,10 +83,10 @@ class Settings(BaseSettings):
     def assemble_kafka_brokers(cls, v: Optional[str]) -> str:
         return os.getenv("KAFKA_BOOTSTRAP_SERVERS") or v or "localhost:9092"
 
-    # Google OAuth
-    GOOGLE_CLIENT_ID: str = "mock-google-client-id.apps.googleusercontent.com"
-    GOOGLE_CLIENT_SECRET: str = "mock-google-client-secret"
-    OAUTH_REDIRECT_URI: str = "http://localhost:5173/auth/callback"
+    # Google OAuth — supply via environment variables, never hardcode
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    OAUTH_REDIRECT_URI: str = "http://localhost:3000/auth/callback"
 
     # Seed data config
     AUTO_SEED_DATABASE: bool = True

@@ -21,9 +21,11 @@ export const OAuthCallbackPage: React.FC = () => {
 
     const exchangeCode = async () => {
       try {
+        const redirectUri = `${window.location.origin}/auth/callback`;
         const res = await api.post<TokenResponse>('/auth/google/callback', {
           code,
           state: state || undefined,
+          redirect_uri: redirectUri,
         });
         localStorage.setItem('secureflow_access_token', res.access_token);
         navigate('/', { replace: true });

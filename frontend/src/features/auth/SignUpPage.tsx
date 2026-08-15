@@ -57,7 +57,10 @@ export const SignUpPage: React.FC = () => {
     setErrorMsg(null);
     setIsGoogleLoading(true);
     try {
-      const res = await api.get<{ url: string; client_id: string }>('/auth/google/url');
+      const redirectUri = `${window.location.origin}/auth/callback`;
+      const res = await api.get<{ url: string; client_id: string }>(
+        `/auth/google/url?redirect_uri=${encodeURIComponent(redirectUri)}`
+      );
       if (res.client_id.startsWith('mock-')) {
         navigate('/auth/callback?code=mock_google_auth_code_dev');
       } else {

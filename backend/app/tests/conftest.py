@@ -11,6 +11,10 @@ os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
 os.environ["REDIS_RATE_LIMIT_ENABLED"] = "false"
 os.environ["KAFKA_ENABLED"] = "false"
 os.environ["AUTO_SEED_DATABASE"] = "true"
+# Override with mock Google credentials — tests must NEVER make real Google API calls
+# Force-set (not setdefault) so these override any real credentials in the container env
+os.environ["GOOGLE_CLIENT_ID"] = "mock-google-client-id.apps.googleusercontent.com"
+os.environ["GOOGLE_CLIENT_SECRET"] = "mock-google-client-secret"
 
 from app.core.database import Base, get_db
 from app.core.security import create_access_token
@@ -21,6 +25,23 @@ from app.services.seed_service import seed_database
 # In-memory testing engine
 test_engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
 test_session_maker = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _mock_google_credentials():
+    """Patch the settings singleton to use mock Google credentials for all tests.
+    
+    This ensures auth_service always runs in sandbox mode regardless of what
+    real credentials are set in the container/host environment.
+    """
+    from app.core.config import settings
+    original_id = settings.GOOGLE_CLIENT_ID
+    original_secret = settings.GOOGLE_CLIENT_SECRET
+    settings.GOOGLE_CLIENT_ID = "mock-google-client-id.apps.googleusercontent.com"
+    settings.GOOGLE_CLIENT_SECRET = "mock-google-client-secret"
+    yield
+    settings.GOOGLE_CLIENT_ID = original_id
+    settings.GOOGLE_CLIENT_SECRET = original_secret
 
 
 @pytest.fixture(scope="session")

@@ -57,16 +57,26 @@ async def test_auth_me(client: AsyncClient, auth_headers):
 
 
 @pytest.mark.asyncio
-async def test_google_oauth_endpoints(client: AsyncClient):
-    """Test Google OAuth URL generation and OIDC callback exchange."""
-    # 1. URL generation
+async def test_google_oauth_endpoints(client: AsyncClient, monkeypatch):
+    """Test Google OAuth URL generation and OIDC callback exchange.
+
+    Forces sandbox mode via monkeypatching so this test is environment-independent
+    and never attempts a real network call to accounts.google.com.
+    """
+    from app.core import config as cfg
+
+    # Force sandbox mode regardless of real env vars set in Docker
+    monkeypatch.setattr(cfg.settings, "GOOGLE_CLIENT_ID", "mock-google-client-id.apps.googleusercontent.com")
+    monkeypatch.setattr(cfg.settings, "GOOGLE_CLIENT_SECRET", "mock-google-client-secret")
+
+    # 1. URL generation — endpoint must return 200 and a Google auth URL
     url_resp = await client.get("/api/v1/auth/google/url")
     assert url_resp.status_code == 200
     url_data = url_resp.json()
     assert "accounts.google.com" in url_data["url"]
     assert "client_id" in url_data
 
-    # 2. Callback exchange
+    # 2. Callback exchange — sandbox mode resolves code without calling Google
     cb_resp = await client.post(
         "/api/v1/auth/google/callback",
         json={"code": "sample_auth_code_test", "state": "secureflow-oauth-state"},
