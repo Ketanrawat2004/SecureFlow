@@ -87,19 +87,21 @@ export const SignInPage: React.FC = () => {
       {/* Top right theme toggle */}
       <div className="absolute top-4 right-4">
         <button
+          type="button"
           onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          className="p-2 rounded-lg bg-surface-900 border border-surface-750 text-surface-400 hover:text-surface-200 hover:bg-surface-800 transition-colors shadow-subtle flex items-center gap-1.5 text-xs"
+          aria-label="Toggle theme"
+          title={`Current theme: ${theme}. Click to switch to ${theme === 'light' ? 'dark' : 'light'} mode.`}
+          className="px-2.5 py-1.5 rounded-md bg-surface-900 border border-surface-700 text-surface-300 hover:text-surface-100 hover:bg-surface-800 transition-colors shadow-subtle flex items-center gap-1.5 text-xs font-medium"
         >
           {theme === 'light' ? (
             <>
-              <Moon className="w-3.5 h-3.5 text-surface-400" />
-              <span className="font-medium text-[11px]">Dark</span>
+              <Sun className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-[11px] font-medium text-surface-200">Light</span>
             </>
           ) : (
             <>
-              <Sun className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-medium text-[11px]">Light</span>
+              <Moon className="w-3.5 h-3.5 text-brand-400" />
+              <span className="text-[11px] font-medium text-surface-200">Dark</span>
             </>
           )}
         </button>

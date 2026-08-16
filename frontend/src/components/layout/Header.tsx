@@ -158,14 +158,14 @@ export const Header: React.FC = () => {
         {/* Theme Toggle (Light / Dark Mode) */}
         <button
           onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          className="p-1.5 rounded text-surface-400 hover:text-surface-200 hover:bg-surface-800 transition-colors flex items-center justify-center border border-transparent hover:border-surface-750"
+          aria-label="Toggle light and dark theme"
+          title={`Current theme: ${theme}. Click to switch to ${theme === 'light' ? 'dark' : 'light'} mode.`}
+          className="p-1.5 rounded-md text-surface-400 hover:text-surface-100 hover:bg-surface-800 transition-colors flex items-center justify-center border border-surface-700/60"
         >
           {theme === 'light' ? (
-            <Moon className="w-3.5 h-3.5 text-surface-400 hover:text-brand-500 transition-colors" />
+            <Sun className="w-3.5 h-3.5 text-amber-500 hover:text-amber-600 transition-colors" />
           ) : (
-            <Sun className="w-3.5 h-3.5 text-amber-400 hover:text-amber-300 transition-colors" />
+            <Moon className="w-3.5 h-3.5 text-brand-400 hover:text-brand-300 transition-colors" />
           )}
         </button>
 
