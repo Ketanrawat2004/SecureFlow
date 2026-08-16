@@ -1,0 +1,22 @@
+# ==============================================================================
+# SECUREFLOW - Production Docker Compose Configuration (AWS / Cloud)
+# Security Hardened: Only NGINX (Port 80 / 443) is exposed to the public host.
+# PostgreSQL, Redis, Kafka, and FastAPI stay strictly internal on private network.
+# ==============================================================================
+
+services:
+  postgres:
+    ports: !reset []
+
+  redis:
+    ports: !reset []
+
+  kafka:
+    ports: !reset []
+
+  backend:
+    ports: !reset []
+
+  frontend:
+    ports:
+      - "80:80"

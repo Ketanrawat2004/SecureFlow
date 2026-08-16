@@ -89,12 +89,22 @@ export const SignUpPage: React.FC = () => {
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-sm text-center">
-        <img
-          src="/logo.png"
-          alt="SecureFlow"
-          className="h-16 w-auto mx-auto mb-2 object-contain rounded drop-shadow-sm transition-transform hover:scale-105"
-        />
-        <h1 className="text-lg font-semibold tracking-tight text-surface-100">
+        <div className="inline-flex items-center justify-center gap-2.5 mb-3">
+          <img
+            src="/logo.png"
+            alt="SecureFlow Shield"
+            className="h-10 w-auto object-contain rounded drop-shadow-sm transition-transform hover:scale-105"
+          />
+          <div className="text-left">
+            <span className="text-xl font-bold tracking-tight text-surface-100 block leading-none">
+              SECURE<span className="text-brand-500">FLOW</span>
+            </span>
+            <span className="text-[9px] font-mono text-surface-400 uppercase tracking-widest block mt-1">
+              ACCESS GOVERNANCE
+            </span>
+          </div>
+        </div>
+        <h1 className="text-base font-semibold tracking-tight text-surface-100">
           Create SecureFlow Workspace
         </h1>
         <p className="mt-0.5 text-xs text-surface-400">

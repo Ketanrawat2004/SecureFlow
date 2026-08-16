@@ -1,157 +1,238 @@
-# SecureFlow — AWS Free Tier ($0/month) Deployment Guide
+# SecureFlow — AWS Cost-Conscious Deployment Guide
 
-This guide walks you through deploying **SecureFlow** on the **AWS Free Tier** at **$0.00 / month**.
+Cost-conscious AWS deployment using eligible/free-plan resources where available. Actual cost depends on account eligibility, region, resource usage, and AWS pricing.
 
 ---
 
-## 🏛️ Architecture Overview (AWS Free Tier)
+## 🏛️ Production Architecture & Network Topology
+
+In production, SecureFlow is deployed behind an **NGINX Reverse Proxy** that terminates SSL/TLS and routes requests internally. All databases, message queues, and backend services stay private and are **never exposed to the public internet**.
 
 ```
-                       ┌────────────────────────┐
-                       │   User / Web Browser   │
-                       └───────────┬────────────┘
-                                   │ HTTPS / HTTP (Port 80/443)
-                                   ▼
-                    ┌───────────────────────────────┐
-                    │      AWS EC2 (t2.micro /      │
-                    │           t3.micro)           │
-                    │   750 hrs/month (100% FREE)   │
-                    │                               │
-                    │  ┌─────────────────────────┐  │
-                    │  │ NGINX (Frontend Proxy)  │  │
-                    │  └───────────┬─────────────┘  │
-                    │              │                │
-                    │  ┌───────────▼─────────────┐  │
-                    │  │ FastAPI Backend (:8000) │  │
-                    │  └───────┬───────────┬─────┘  │
-                    │          │           │        │
-                    │  ┌───────▼────┐ ┌────▼──────┐ │
-                    │  │ PostgreSQL │ │   Redis   │ │
-                    │  └────────────┘ └───────────┘ │
-                    └───────────────────────────────┘
+                           Internet / Web Browser
+                                     │
+                                     │ HTTPS (Port 443) / HTTP (Port 80)
+                                     ▼
+                   ┌───────────────────────────────────┐
+                   │    AWS EC2 Security Group (VPC)   │
+                   │    • Port 80 (HTTP)               │
+                   │    • Port 443 (HTTPS)             │
+                   │    • Port 22 (SSH - My IP Only)   │
+                   └─────────────────┬─────────────────┘
+                                     │
+                                     ▼
+                   ┌───────────────────────────────────┐
+                   │    NGINX Reverse Proxy (Port 80)  │
+                   │    (SSL Termination / Static SPA) │
+                   └─────────┬─────────────────────────┘
+                             │
+            ┌────────────────┴────────────────┐
+            │                                 │
+     (Static Assets)                    (/api/ Routes & SSE)
+            │                                 │
+            ▼                                 ▼
+    React + Vite SPA                FastAPI Backend (:8000)
+    (Compiled Bundle)               [Internal Docker Network]
+                                              │
+                     ┌────────────────────────┴────────────────────────┐
+                     │                                                 │
+                     ▼                                                 ▼
+          PostgreSQL Database (:5432)                          Redis Cache (:6379)
+          [Internal Docker Network]                         [Internal Docker Network]
+          [Persistent Volume: postgres_data]
 ```
 
 ---
 
-## 🚀 Step 1: Launch an AWS EC2 Free Tier Instance
+## 🛡️ Security Group Ingress Rules (Mandatory)
 
-1. Sign in to your **[AWS Management Console](https://console.aws.amazon.com/)**.
-2. Search for **EC2** and click **Launch instance**.
-3. Configure the instance:
-   - **Name**: `secureflow-server`
-   - **OS / AMI**: **Ubuntu Server 24.04 LTS (HVM)** (*Free tier eligible*)
-   - **Instance type**: `t2.micro` (or `t3.micro` depending on region) (*Free tier eligible*)
-   - **Key pair**: Select **Create new key pair**, name it `secureflow-key.pem`, and download it to your computer.
-4. **Network / Security Group Settings**:
-   - Check **Allow SSH traffic from** (Anywhere `0.0.0.0/0` or My IP)
-   - Check **Allow HTTP traffic from the internet** (Port `80`)
-   - Check **Allow HTTPS traffic from the internet** (Port `443`)
-   - Add Custom TCP Rule: Port **`8000`** (Source: Anywhere `0.0.0.0/0`)
-5. **Storage**: 20 GB (Up to 30 GB gp3 is Free Tier eligible).
-6. Click **Launch instance**.
+| Type | Port Range | Source | Purpose |
+|---|---|---|---|
+| **HTTPS** | `443` | `0.0.0.0/0` (Anywhere) | Public encrypted web traffic |
+| **HTTP** | `80` | `0.0.0.0/0` (Anywhere) | Let's Encrypt renewal & redirect to HTTPS |
+| **SSH** | `22` | **`My IP`** (Restricted) | Administrative terminal access |
+
+> ⚠️ **SECURITY REQUIREMENT**: 
+> **Never open ports `3000`, `8000`, `5432` (PostgreSQL), `6379` (Redis), `9092` (Kafka), or `2181` (Zookeeper) to the public internet.** 
+> All application and database services communicate strictly through the private Docker bridge network (`secureflow-net`).
 
 ---
 
-## 💻 Step 2: Connect to Your EC2 Instance
+## 🚀 Step-by-Step Deployment Walkthrough
 
-Open your terminal (PowerShell, Command Prompt, or Git Bash) on your computer where `secureflow-key.pem` is downloaded:
+### 1️⃣ Launch an EC2 Instance
+
+1. Open the **[AWS EC2 Console](https://console.aws.amazon.com/ec2/)** and click **Launch instance**.
+2. **Name**: `secureflow-production`
+3. **AMI**: **Ubuntu Server 24.04 LTS (HVM)** (*Free tier eligible*)
+4. **Instance Type**: `t2.micro` or `t3.micro` (*Free tier eligible*)
+5. **Key pair**: Create and download `secureflow-key.pem`.
+6. **Network Settings**:
+   - Create a Security Group with the exact rules from the table above (SSH restricted to your IP, HTTP 80, HTTPS 443).
+7. **Storage**: 20 GB gp3 root volume.
+8. Click **Launch instance**.
+
+---
+
+### 2️⃣ Connect to Your EC2 Server
 
 ```bash
-# Set key permissions (on Linux/Mac: chmod 400 secureflow-key.pem)
+# On Linux/Mac:
+chmod 400 secureflow-key.pem
+ssh -i "secureflow-key.pem" ubuntu@<YOUR-EC2-PUBLIC-IP>
+
+# On Windows PowerShell:
 ssh -i "secureflow-key.pem" ubuntu@<YOUR-EC2-PUBLIC-IP>
 ```
 
 ---
 
-## ⚡ Step 3: Run the 1-Command Automated Setup
+### 3️⃣ Install Docker & Docker Compose
 
-Once connected to your Ubuntu EC2 terminal, copy and paste this one-command installation:
+Run the following commands on your EC2 instance:
 
 ```bash
-# 1. Update system and install Docker & Docker Compose
+# Update packages
 sudo apt-get update -y && sudo apt-get upgrade -y
-sudo apt-get install -y ca-certificates curl gnupg git
+sudo apt-get install -y ca-certificates curl git certbot python3-certbot-nginx
 
-# Install Docker
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-sudo apt-get update -y
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# Add ubuntu user to docker group
+# Install official Docker engine
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 sudo usermod -aG docker ubuntu
+
+# Apply group changes without logging out
+newgrp docker
 ```
 
 ---
 
-## 📦 Step 4: Clone SecureFlow & Start Application
+### 4️⃣ Clone SecureFlow & Configure Environment
 
 ```bash
 # Clone the repository
 git clone https://github.com/Ketanrawat2004/SecureFlow.git
 cd SecureFlow
 
-# Configure environment
+# Create your production environment file
 cp .env.example .env
 
-# Generate a secure JWT Secret Key
+# Generate a secure 32-byte JWT Secret Key
 JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))" 2>/dev/null || openssl rand -hex 32)
 sed -i "s/your-32-byte-secret-key-here/$JWT_SECRET/g" .env
 
-# Add your Google OAuth credentials to .env
-# nano .env
-# Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
-# Set OAUTH_REDIRECT_URI=http://<YOUR-EC2-PUBLIC-IP>:3000/auth/callback (or port 80)
-
-# Build and start the full production stack with Docker Compose
-sudo docker compose up -d --build
+# Edit .env with your production credentials
+nano .env
 ```
 
+Set the following variables in `.env`:
+```ini
+ENVIRONMENT=production
+DEBUG=false
+APP_NAME=SecureFlow
+
+# Security
+JWT_SECRET_KEY=<auto-generated-random-key>
+POSTGRES_USER=secureflow_admin
+POSTGRES_PASSWORD=<strong-random-database-password>
+POSTGRES_DB=secureflow_production
+
+# Google OAuth (Must match Google Cloud Console)
+GOOGLE_CLIENT_ID=228464498331-7hj98ia5udlbc04a9sk70cmdqmujsriv.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=<your-google-client-secret>
+OAUTH_REDIRECT_URI=https://<YOUR_DOMAIN>/auth/callback
+
+# Allowed Origins
+CORS_ORIGINS=https://<YOUR_DOMAIN>
+FRONTEND_URL=https://<YOUR_DOMAIN>
+```
+
+> 🔒 **SECURITY NOTE**: `.env` is stored locally on the EC2 host only and is strictly ignored by Git (`.gitignore`). Never commit `.env` or passwords to GitHub.
+
 ---
 
-## 🌐 Step 5: Configure Google Cloud Console for AWS
+### 5️⃣ Start Production Stack with Docker Compose
 
-1. Go to **[Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials)**.
-2. Under **Authorized JavaScript origins**, add:
-   - `http://<YOUR-EC2-PUBLIC-IP>:3000` (or `http://<YOUR-EC2-PUBLIC-IP>`)
-3. Under **Authorized redirect URIs**, add:
-   - `http://<YOUR-EC2-PUBLIC-IP>:3000/auth/callback` (or `http://<YOUR-EC2-PUBLIC-IP>/auth/callback`)
-4. Click **Save**.
-
----
-
-## 🛡️ Step 6: Verify Live Deployment
-
-Open your browser and visit:
-- **Frontend Dashboard**: `http://<YOUR-EC2-PUBLIC-IP>:3000` (or `http://<YOUR-EC2-PUBLIC-IP>`)
-- **Backend API Health Check**: `http://<YOUR-EC2-PUBLIC-IP>:8000/health`
-- **Interactive OpenAPI Documentation**: `http://<YOUR-EC2-PUBLIC-IP>:8000/docs`
-
----
-
-## 💡 Pro Tip: Free SSL Certificate (HTTPS) with Let's Encrypt
-
-If you attach a free domain or subdomain (e.g. from DuckDNS, Cloudflare, or Route 53):
+Run with the production security overlay (`docker-compose.prod.yml`) so that internal ports remain unmapped:
 
 ```bash
-sudo apt-get install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d yourdomain.com
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+Verify all services are running and healthy:
+```bash
+docker compose ps
 ```
 
 ---
 
-## 📊 AWS Free Tier Cost Checklist
+### 6️⃣ Setup Free HTTPS / SSL with Let's Encrypt (Certbot)
 
-| AWS Resource | Free Tier Allowance | SecureFlow Usage | Monthly Cost |
-|---|---|---|---|
-| **EC2 `t2.micro` / `t3.micro`** | 750 hours/month | 1 instance (744 hrs) | **$0.00** |
-| **EBS Storage** | 30 GB gp3 / gp2 | 20 GB gp3 | **$0.00** |
-| **Data Transfer** | 100 GB Out / month | ~5 GB / month | **$0.00** |
-| **Total Cost** | — | — | **$0.00 / month** |
+A valid domain and HTTPS certificate are **required** for production Google OAuth:
+
+1. Point your domain's DNS `A Record` (e.g. `secureflow.yourdomain.com`) to your EC2 Public IP.
+2. Obtain a free SSL certificate:
+   ```bash
+   sudo certbot certonly --standalone -d yourdomain.com
+   ```
+3. NGINX will automatically terminate SSL and serve traffic over HTTPS port 443 with HSTS and secure cookies enabled.
+
+---
+
+### 7️⃣ Google Cloud Console OAuth Configuration
+
+In the **[Google Cloud Console](https://console.cloud.google.com/apis/credentials)**:
+
+1. **Authorized JavaScript origins**:
+   - `https://yourdomain.com`
+2. **Authorized redirect URIs**:
+   - `https://yourdomain.com/auth/callback`
+
+*(Note: If performing a temporary smoke test on a raw EC2 IP before domain setup, set `http://<EC2-IP>/auth/callback` strictly labeled as **Development / Smoke Test Only**).*
+
+---
+
+## 💾 Database Persistence & Backup Guide
+
+### Data Persistence
+PostgreSQL data is stored in the Docker named volume **`postgres_data`**, which resides at `/var/lib/docker/volumes/secureflow_postgres_data/_data` on the host filesystem.
+
+The database **fully survives**:
+- Container restarts (`docker compose restart`)
+- Image rebuilds and upgrades (`docker compose down && docker compose up -d`)
+- Host reboots
+
+### Creating Automated Backups
+To take a full PostgreSQL snapshot:
+```bash
+docker compose exec postgres pg_dump -U secureflow_admin -d secureflow_production > backup_$(date +%F).sql
+```
+
+To restore from a backup:
+```bash
+cat backup_2026-08-16.sql | docker compose exec -T postgres psql -U secureflow_admin -d secureflow_production
+```
+
+---
+
+## 📡 Real-Time SSE (Server-Sent Events) Verification
+
+The production NGINX reverse proxy is configured with:
+- `proxy_buffering off;` (Disables NGINX chunk buffering so SSE events reach clients instantly)
+- `proxy_read_timeout 86400s;` (Maintains long-lived event streams without premature disconnections)
+- `X-Accel-Buffering: no;` (Returned by FastAPI to prevent intermediate proxy buffering)
+- **15-Second Heartbeat**: Keeps connections alive through AWS NAT gateways and stateful firewalls.
+- **JWT Authentication**: All SSE streams (`/api/v1/realtime/stream`) require a valid bearer token or authenticated session.
+
+---
+
+## 📊 AWS Free Tier Resource Allocation
+
+| AWS Resource | Eligible Free Tier Allowance | SecureFlow Allocation |
+|---|---|---|
+| **EC2 Instance** | 750 hours / month (`t2.micro` or `t3.micro`) | 1 instance (744 hrs / month) |
+| **EBS Storage** | Up to 30 GB gp3 / gp2 | 20 GB gp3 storage |
+| **Data Transfer** | 100 GB Internet Out / month | Typical demo usage (~2–5 GB / month) |
+| **SSL / TLS** | Free via Let's Encrypt / Certbot | Automated renewal |
+
+*Cost depends on account eligibility, region, resource usage, and AWS pricing.*

@@ -41,11 +41,21 @@ export const OAuthCallbackPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-surface-950 flex flex-col items-center justify-center p-4">
       <div className="bg-surface-900 border border-surface-750 p-8 rounded-xl max-w-md w-full text-center shadow-card space-y-4">
-        <img
-          src="/logo.png"
-          alt="SecureFlow"
-          className="h-14 w-auto mx-auto mb-2 object-contain rounded drop-shadow-sm"
-        />
+        <div className="inline-flex items-center justify-center gap-2 mb-2">
+          <img
+            src="/logo.png"
+            alt="SecureFlow Shield"
+            className="h-10 w-auto object-contain rounded drop-shadow-sm"
+          />
+          <div className="text-left">
+            <span className="text-lg font-bold tracking-tight text-surface-100 block leading-none">
+              SECURE<span className="text-brand-500">FLOW</span>
+            </span>
+            <span className="text-[8px] font-mono text-surface-400 uppercase tracking-widest block mt-0.5">
+              ACCESS GOVERNANCE
+            </span>
+          </div>
+        </div>
         {error ? (
           <>
             <div className="w-12 h-12 rounded-xl bg-rose-950/60 border border-rose-800/60 text-rose-400 flex items-center justify-center mx-auto">

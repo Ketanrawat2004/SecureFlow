@@ -96,11 +96,16 @@ export const Sidebar: React.FC = () => {
       }`}
     >
       {/* Brand Header */}
-      <div className="h-12 flex items-center justify-between px-3 border-b border-surface-750">
-        <Link to="/" className="flex items-center gap-2 overflow-hidden group">
+      <div className={`h-12 flex items-center px-3 border-b border-surface-750 ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+        <Link
+          to="/"
+          aria-label="SecureFlow Home"
+          title="SecureFlow Home"
+          className="flex items-center gap-2 overflow-hidden group"
+        >
           <img
             src="/logo.png"
-            alt="SecureFlow Logo"
+            alt="SecureFlow Shield"
             className="h-7 w-auto object-contain rounded shrink-0 transition-transform group-hover:scale-105"
           />
           {!sidebarCollapsed && (
