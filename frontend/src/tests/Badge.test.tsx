@@ -7,14 +7,14 @@ describe('Badge Component', () => {
     render(<Badge variant="success">Approved</Badge>);
     const badge = screen.getByText('Approved');
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveClass('text-emerald-300');
+    expect(badge).toHaveClass('text-emerald-700');
   });
 
   it('renders danger badge for critical risk', () => {
     render(<Badge variant="danger">Critical</Badge>);
     const badge = screen.getByText('Critical');
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveClass('text-rose-300');
+    expect(badge).toHaveClass('text-rose-700');
   });
 
   it('renders dot indicator when enabled', () => {

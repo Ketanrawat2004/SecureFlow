@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ==============================================================================
-   SECUREFLOW DYNAMIC THEME SYSTEM (DEFAULT: LIGHT MODE)
+   SECUREFLOW DYNAMIC THEME SYSTEM (VIBRANT HIGH-CONTRAST LIGHT & DARK)
    ============================================================================== */
 
 :root,
@@ -14,23 +14,23 @@ body,
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Light Mode Surface RGB Values (Default) */
-  --surface-50: 2 6 23;        /* #020617 */
-  --surface-100: 15 23 42;     /* #0f172a - deep primary heading */
-  --surface-200: 30 41 59;     /* #1e293b - primary body text */
+  /* High-Contrast Light Mode Tokens */
+  --surface-50: 2 6 23;        /* #020617 - deep dark primary headings */
+  --surface-100: 15 23 42;     /* #0f172a - rich headings */
+  --surface-200: 30 41 59;     /* #1e293b - crisp body text */
   --surface-300: 51 65 85;     /* #334155 - secondary text */
-  --surface-400: 100 116 139;  /* #64748b - muted label */
-  --surface-500: 148 163 184;  /* #94a3b8 - subtle icon */
-  --surface-600: 203 213 225;  /* #cbd5e1 - accent border */
-  --surface-700: 226 232 240;  /* #e2e8f0 - strong border */
-  --surface-750: 238 242 246;  /* #eef2f6 - subtle divider */
-  --surface-800: 241 245 249;  /* #f1f5f9 - card hover / subcard */
-  --surface-850: 248 250 252;  /* #f8fafc - subcard background */
-  --surface-900: 255 255 255;  /* #ffffff - card / header / sidebar white */
-  --surface-950: 248 250 252;  /* #f8fafc - main page light background */
+  --surface-400: 71 85 105;    /* #475569 - high-contrast readable labels */
+  --surface-500: 100 116 139;  /* #64748b - clean icons */
+  --surface-600: 148 163 184;  /* #94a3b8 - accent border */
+  --surface-700: 203 213 225;  /* #cbd5e1 - visible crisp border */
+  --surface-750: 226 232 240;  /* #e2e8f0 - distinct dividers */
+  --surface-800: 226 232 240;  /* #e2e8f0 - card hover & active background */
+  --surface-850: 248 250 252;  /* #f8fafc - sub-card background */
+  --surface-900: 255 255 255;  /* #ffffff - pure white card / header / sidebar */
+  --surface-950: 241 245 249;  /* #f1f5f9 - cool slate canvas background */
 
-  --scrollbar-thumb: #cbd5e1;
-  --scrollbar-thumb-hover: #94a3b8;
+  --scrollbar-thumb: #94a3b8;
+  --scrollbar-thumb-hover: #64748b;
   color-scheme: light;
 }
 
@@ -109,10 +109,25 @@ body {
 .divide-surface-800 > :not([hidden]) ~ :not([hidden]) { border-color: rgb(var(--surface-800)) !important; }
 .divide-surface-800\/80 > :not([hidden]) ~ :not([hidden]) { border-color: rgb(var(--surface-800) / 0.8) !important; }
 
+/* Enhanced Card Elevation in Light Mode */
+.shadow-card {
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
+}
+.dark .shadow-card {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+}
+
+.shadow-subtle {
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.06);
+}
+.dark .shadow-subtle {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
 /* Custom subtle scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {

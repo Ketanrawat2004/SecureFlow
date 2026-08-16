@@ -32,23 +32,31 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const variantStyles = {
-    success: 'bg-emerald-950/50 text-emerald-300 border border-emerald-800/50',
-    warning: 'bg-amber-950/50 text-amber-300 border border-amber-800/50',
-    danger: 'bg-rose-950/50 text-rose-300 border border-rose-800/50',
-    info: 'bg-sky-950/50 text-sky-300 border border-sky-800/50',
-    brand: 'bg-brand-950/50 text-brand-300 border border-brand-800/50',
-    purple: 'bg-purple-950/50 text-purple-300 border border-purple-800/50',
-    neutral: 'bg-surface-800/90 text-surface-300 border border-surface-700/70',
-    outline: 'bg-transparent text-surface-400 border border-surface-700',
+    success:
+      'bg-emerald-50 text-emerald-700 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 font-semibold',
+    warning:
+      'bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60 font-semibold',
+    danger:
+      'bg-rose-50 text-rose-700 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 font-semibold',
+    info:
+      'bg-sky-50 text-sky-700 border border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/60 font-semibold',
+    brand:
+      'bg-brand-50 text-brand-700 border border-brand-300 dark:bg-brand-950/60 dark:text-brand-300 dark:border-brand-800/60 font-semibold',
+    purple:
+      'bg-purple-50 text-purple-700 border border-purple-300 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800/60 font-semibold',
+    neutral:
+      'bg-surface-800 text-surface-200 border border-surface-700 font-medium',
+    outline:
+      'bg-transparent text-surface-300 border border-surface-700 font-medium',
   };
 
   const dotStyles = {
-    success: 'bg-emerald-400',
-    warning: 'bg-amber-400',
-    danger: 'bg-rose-400',
-    info: 'bg-sky-400',
-    brand: 'bg-brand-400',
-    purple: 'bg-purple-400',
+    success: 'bg-emerald-600 dark:bg-emerald-400',
+    warning: 'bg-amber-600 dark:bg-amber-400',
+    danger: 'bg-rose-600 dark:bg-rose-400',
+    info: 'bg-sky-600 dark:bg-sky-400',
+    brand: 'bg-brand-600 dark:bg-brand-400',
+    purple: 'bg-purple-600 dark:bg-purple-400',
     neutral: 'bg-surface-400',
     outline: 'bg-surface-400',
   };
