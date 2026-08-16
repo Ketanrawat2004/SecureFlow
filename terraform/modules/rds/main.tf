@@ -20,6 +20,12 @@ variable "db_instance_class" {
   default = "db.t4g.medium"
 }
 
+variable "db_password" {
+  type        = string
+  description = "Master password for the RDS PostgreSQL instance. Supply via terraform.tfvars or TF_VAR_db_password environment variable. Never hardcode."
+  sensitive   = true
+}
+
 resource "aws_db_subnet_group" "rds" {
   name       = "secureflow-rds-subnet-group-${var.environment}"
   subnet_ids = var.subnet_ids

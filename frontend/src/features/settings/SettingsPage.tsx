@@ -6,8 +6,11 @@ import {
   Check,
   Copy,
   Key,
+  Moon,
+  Palette,
   Save,
   Shield,
+  Sun,
   User,
   Users,
 } from 'lucide-react';
@@ -58,7 +61,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export const SettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { activeOrgId } = useAppStore();
+  const { activeOrgId, theme, setTheme } = useAppStore();
 
   const [activeTab, setActiveTab] = useState('profile');
   const [copiedKey, setCopiedKey] = useState(false);
@@ -129,6 +132,7 @@ export const SettingsPage: React.FC = () => {
   const settingsTabs = [
     { id: 'profile', label: 'My Profile', icon: <User className="w-3.5 h-3.5" /> },
     { id: 'workspace', label: 'Workspace Details', icon: <Users className="w-3.5 h-3.5" /> },
+    { id: 'appearance', label: 'Appearance & Theme', icon: <Palette className="w-3.5 h-3.5" /> },
     { id: 'security', label: 'Security & Auth', icon: <Shield className="w-3.5 h-3.5" /> },
     { id: 'apikeys', label: 'API Keys', icon: <Key className="w-3.5 h-3.5" /> },
   ];
@@ -257,6 +261,80 @@ export const SettingsPage: React.FC = () => {
 
             <div className="p-2.5 rounded bg-surface-950 border border-surface-750 text-[11px] text-surface-400">
               Only workspace <span className="font-semibold text-brand-400">Owner</span> can modify namespace slugs or billing parameters.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Appearance & Theme */}
+      {activeTab === 'appearance' && (
+        <div className="bg-surface-900 border border-surface-750 rounded-md p-4 max-w-xl space-y-5">
+          <div>
+            <h3 className="text-xs font-semibold text-surface-100 uppercase font-mono tracking-wider">
+              Appearance & Theme Preferences
+            </h3>
+            <p className="text-[11px] text-surface-400 mt-0.5">
+              Choose your interface color mode. SecureFlow defaults to Light mode always.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Light Mode Option */}
+            <div
+              onClick={() => setTheme('light')}
+              className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
+                theme === 'light'
+                  ? 'border-brand-500 bg-brand-500/5 ring-1 ring-brand-500/30'
+                  : 'border-surface-750 bg-surface-950/40 hover:border-surface-600'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500">
+                    <Sun className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-semibold text-surface-100">Light Mode (Default)</span>
+                </div>
+                {theme === 'light' && <Badge variant="info" size="xs">ACTIVE</Badge>}
+              </div>
+              <p className="text-[11px] text-surface-400">
+                Crisp enterprise white theme with high-contrast slate typography.
+              </p>
+            </div>
+
+            {/* Dark Mode Option */}
+            <div
+              onClick={() => setTheme('dark')}
+              className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
+                theme === 'dark'
+                  ? 'border-brand-500 bg-brand-500/5 ring-1 ring-brand-500/30'
+                  : 'border-surface-750 bg-surface-950/40 hover:border-surface-600'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-md bg-brand-500/10 text-brand-400">
+                    <Moon className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-semibold text-surface-100">Dark Mode</span>
+                </div>
+                {theme === 'dark' && <Badge variant="info" size="xs">ACTIVE</Badge>}
+              </div>
+              <p className="text-[11px] text-surface-400">
+                Deep obsidian theme designed for low-light engineering operations.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-surface-750 flex items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="SecureFlow Logo"
+              className="h-10 w-auto object-contain rounded"
+            />
+            <div className="text-[11px] text-surface-400">
+              <span className="font-semibold text-surface-200 block">SecureFlow Brand Identity</span>
+              <span>Secure • Automate • Protect — Version 1.0.0</span>
             </div>
           </div>
         </div>

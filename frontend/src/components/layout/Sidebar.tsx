@@ -10,7 +10,6 @@ import {
   ChevronsRight,
   FolderGit2,
   GitPullRequest,
-  Lock,
   LogOut,
   Settings,
   Shield,
@@ -97,15 +96,20 @@ export const Sidebar: React.FC = () => {
       }`}
     >
       {/* Brand Header */}
-      <div className="h-12 flex items-center justify-between px-3.5 border-b border-surface-750">
+      <div className="h-12 flex items-center justify-between px-3 border-b border-surface-750">
         <Link to="/" className="flex items-center gap-2 overflow-hidden group">
-          <div className="w-6 h-6 rounded bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 shrink-0 group-hover:border-brand-500 transition-colors">
-            <Lock className="w-3.5 h-3.5" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="SecureFlow Logo"
+            className="h-7 w-auto object-contain rounded shrink-0 transition-transform group-hover:scale-105"
+          />
           {!sidebarCollapsed && (
-            <div className="truncate">
-              <span className="text-xs font-semibold tracking-tight text-surface-100 flex items-center gap-1">
-                SECURE<span className="text-brand-400">FLOW</span>
+            <div className="truncate flex flex-col">
+              <span className="text-xs font-bold tracking-tight text-surface-100 flex items-center gap-0.5 leading-none">
+                SECURE<span className="text-brand-500">FLOW</span>
+              </span>
+              <span className="text-[8px] font-mono text-surface-400 tracking-wider mt-0.5">
+                ACCESS GOVERNANCE
               </span>
             </div>
           )}

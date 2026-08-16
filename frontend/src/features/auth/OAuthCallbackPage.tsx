@@ -40,7 +40,12 @@ export const OAuthCallbackPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-surface-950 flex flex-col items-center justify-center p-4">
-      <div className="bg-surface-900 border border-surface-800 p-8 rounded-2xl max-w-md w-full text-center shadow-card space-y-4">
+      <div className="bg-surface-900 border border-surface-750 p-8 rounded-xl max-w-md w-full text-center shadow-card space-y-4">
+        <img
+          src="/logo.png"
+          alt="SecureFlow"
+          className="h-14 w-auto mx-auto mb-2 object-contain rounded drop-shadow-sm"
+        />
         {error ? (
           <>
             <div className="w-12 h-12 rounded-xl bg-rose-950/60 border border-rose-800/60 text-rose-400 flex items-center justify-center mx-auto">
@@ -59,7 +64,7 @@ export const OAuthCallbackPage: React.FC = () => {
           </>
         ) : (
           <>
-            <Loader2 className="w-8 h-8 text-brand-400 animate-spin mx-auto" />
+            <Loader2 className="w-7 h-7 text-brand-500 animate-spin mx-auto" />
             <h2 className="text-base font-semibold text-surface-100">
               Verifying Google Single Sign-On...
             </h2>

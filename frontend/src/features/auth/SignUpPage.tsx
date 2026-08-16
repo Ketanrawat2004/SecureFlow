@@ -2,25 +2,27 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Lock, Shield } from 'lucide-react';
+import { Shield, Sun, Moon } from 'lucide-react';
 import { z } from 'zod';
 import { api, normalizeApiError } from '@/lib/api/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/forms/Input';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useAppStore } from '@/stores/useAppStore';
 
-const signUpSchema = z.object({
+const registerSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
   organizationName: z.string().min(2, 'Workspace name must be at least 2 characters'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
-type SignUpFormValues = z.infer<typeof signUpSchema>;
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 export const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
-  const { register: registerAuth } = useAuth();
+  const { register: registerUser } = useAuth();
+  const { theme, toggleTheme } = useAppStore();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
@@ -28,25 +30,14 @@ export const SignUpPage: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<SignUpFormValues>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      fullName: '',
-      email: '',
-      organizationName: '',
-      password: '',
-    },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (values: SignUpFormValues) => {
+  const onSubmit = async (data: RegisterFormData) => {
     setErrorMsg(null);
     try {
-      await registerAuth(
-        values.email,
-        values.password,
-        values.fullName,
-        values.organizationName
-      );
+      await registerUser(data.email, data.password, data.fullName, data.organizationName);
       navigate('/');
     } catch (err: any) {
       setErrorMsg(normalizeApiError(err, 'Registration failed. Please check your information.'));
@@ -73,11 +64,34 @@ export const SignUpPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface-950 flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-surface-950 flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8 relative">
+      {/* Top right theme toggle */}
+      <div className="absolute top-4 right-4">
+        <button
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          className="p-2 rounded-lg bg-surface-900 border border-surface-750 text-surface-400 hover:text-surface-200 hover:bg-surface-800 transition-colors shadow-subtle flex items-center gap-1.5 text-xs"
+        >
+          {theme === 'light' ? (
+            <>
+              <Moon className="w-3.5 h-3.5 text-surface-400" />
+              <span className="font-medium text-[11px]">Dark</span>
+            </>
+          ) : (
+            <>
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-medium text-[11px]">Light</span>
+            </>
+          )}
+        </button>
+      </div>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-sm text-center">
-        <div className="w-8 h-8 rounded bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 mx-auto mb-3">
-          <Lock className="w-4 h-4" />
-        </div>
+        <img
+          src="/logo.png"
+          alt="SecureFlow"
+          className="h-16 w-auto mx-auto mb-2 object-contain rounded drop-shadow-sm transition-transform hover:scale-105"
+        />
         <h1 className="text-lg font-semibold tracking-tight text-surface-100">
           Create SecureFlow Workspace
         </h1>

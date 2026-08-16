@@ -6,10 +6,48 @@
   :root {
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    /* Light Mode Default Tokens (Enterprise Clean Theme) */
+    --surface-50: 2 6 23;        /* #020617 - deep dark primary headings */
+    --surface-100: 15 23 42;     /* #0f172a - strong headings */
+    --surface-200: 30 41 59;     /* #1e293b - standard primary body text */
+    --surface-300: 51 65 85;     /* #334155 - secondary text */
+    --surface-400: 100 116 139;  /* #64748b - muted label text */
+    --surface-500: 148 163 184;  /* #94a3b8 - icon / placeholder */
+    --surface-600: 203 213 225;  /* #cbd5e1 - accent border */
+    --surface-700: 226 232 240;  /* #e2e8f0 - strong border */
+    --surface-750: 238 242 246;  /* #eef2f6 - subtle border / divider */
+    --surface-800: 241 245 249;  /* #f1f5f9 - card elevated / hover state */
+    --surface-850: 248 250 252;  /* #f8fafc - sub-card / section background */
+    --surface-900: 255 255 255;  /* #ffffff - card / header / sidebar panel background */
+    --surface-950: 248 250 252;  /* #f8fafc - main page background */
+
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-thumb-hover: #94a3b8;
+  }
+
+  .dark {
+    /* Dark Mode Tokens (Obsidian / Enterprise Dark) */
+    --surface-50: 248 250 252;   /* #f8fafc - bright text */
+    --surface-100: 241 245 249;  /* #f1f5f9 - primary headings */
+    --surface-200: 226 232 240;  /* #e2e8f0 - standard body text */
+    --surface-300: 203 213 225;  /* #cbd5e1 - secondary text */
+    --surface-400: 148 163 184;  /* #94a3b8 - muted labels */
+    --surface-500: 100 116 139;  /* #64748b - placeholder / icons */
+    --surface-600: 71 85 105;    /* #475569 - accent border */
+    --surface-700: 39 44 53;     /* #272c35 - strong border */
+    --surface-750: 31 36 44;     /* #1f242c - subtle divider */
+    --surface-800: 24 27 33;     /* #181b21 - card elevated / hover */
+    --surface-850: 19 21 26;     /* #13151a - section background */
+    --surface-900: 14 16 20;     /* #0e1014 - panels / sidebar */
+    --surface-950: 9 10 12;      /* #090a0c - main dark background */
+
+    --scrollbar-thumb: #1f242c;
+    --scrollbar-thumb-hover: #272c35;
   }
 
   body {
-    @apply bg-surface-950 text-surface-200 antialiased selection:bg-brand-500/20 selection:text-brand-300;
+    @apply bg-surface-950 text-surface-200 antialiased selection:bg-brand-500/20 selection:text-brand-600 dark:selection:text-brand-300;
     font-family: var(--font-sans);
     letter-spacing: -0.01em;
   }
@@ -25,12 +63,12 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #1f242c;
+    background-color: var(--scrollbar-thumb);
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: #272c35;
+    background-color: var(--scrollbar-thumb-hover);
   }
 
   /* Accessible focus rings */

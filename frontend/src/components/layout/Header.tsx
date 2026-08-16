@@ -7,7 +7,9 @@ import {
   CheckCheck,
   ChevronRight,
   Menu,
+  Moon,
   Shield,
+  Sun,
   User as UserIcon,
 } from 'lucide-react';
 import { api } from '@/lib/api/client';
@@ -22,7 +24,7 @@ export const Header: React.FC = () => {
   const queryClient = useQueryClient();
   const location = useLocation();
   const { user, activeRole, devLogin, logout } = useAuth();
-  const { activeOrgId, setMobileMenuOpen } = useAppStore();
+  const { activeOrgId, setMobileMenuOpen, theme, toggleTheme } = useAppStore();
   const { status: realtimeStatus } = useRealtime();
   const [notifOpen, setNotifOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -152,6 +154,20 @@ export const Header: React.FC = () => {
             {realtimeStatus === 'connected' ? 'LIVE' : realtimeStatus === 'reconnecting' ? 'SYNC' : 'IDLE'}
           </span>
         </div>
+
+        {/* Theme Toggle (Light / Dark Mode) */}
+        <button
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          className="p-1.5 rounded text-surface-400 hover:text-surface-200 hover:bg-surface-800 transition-colors flex items-center justify-center border border-transparent hover:border-surface-750"
+        >
+          {theme === 'light' ? (
+            <Moon className="w-3.5 h-3.5 text-surface-400 hover:text-brand-500 transition-colors" />
+          ) : (
+            <Sun className="w-3.5 h-3.5 text-amber-400 hover:text-amber-300 transition-colors" />
+          )}
+        </button>
 
         {/* Notifications Popover */}
         <div className="relative">
