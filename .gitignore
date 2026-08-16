@@ -1,43 +1,70 @@
+# ==============================================================================
+# SECUREFLOW - Git Ignore Configuration
+# ==============================================================================
+
+# Environment & Secret Files (CRITICAL: Never commit secrets)
+.env
+.env.*
+!.env.example
+*.env
+*.env.local
+
+# Certificates & Private Keys
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+certificates/
+secrets/
+certs/
+
 # Dependencies
 node_modules/
 __pycache__/
 *.py[cod]
+*.pyc
+*.pyo
+*.pyd
 *$py.class
 .venv/
 venv/
 env/
 ENV/
 
-# Build artifacts
+# Build & Distribution Artifacts
 dist/
 build/
 *.egg-info/
 .eggs/
+
+# Testing & Coverage
 coverage/
 .coverage
 htmlcov/
 .pytest_cache/
 .vitest/
 
-# Environment files
-.env
-.env.local
-.env.*.local
-*.env
+# Logs & Runtime
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# IDE and OS
+# Databases & Local Storage
+*.sqlite
+*.sqlite3
+*.db
+
+# IDE & Operating System
 .idea/
 .vscode/
 *.swp
 *.swo
 .DS_Store
 Thumbs.db
-
-# Logs and databases
-*.log
-*.sqlite
-*.sqlite3
-*.db
 
 # Terraform
 .terraform/
@@ -52,3 +79,4 @@ override.tf.json
 
 # Docker
 *.tar
+

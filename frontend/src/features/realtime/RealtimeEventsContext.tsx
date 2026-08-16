@@ -17,17 +17,31 @@ const RealtimeEventsContext = createContext<RealtimeContextValue>({
 
 export const RealtimeEventsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
-  const { isAuthenticated, hasPermission } = useAuth();
+  const { isAuthenticated, authContext, hasPermission } = useAuth();
   const { activeOrgId } = useAppStore();
   const [status, setStatus] = useState<RealtimeStatus>('disconnected');
   const [lastEventTime, setLastEventTime] = useState<Date | null>(null);
+
   const eventSourceRef = useRef<EventSource | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryCountRef = useRef(0);
+  const hasPermissionRef = useRef(hasPermission);
 
   useEffect(() => {
-    if (!isAuthenticated || !activeOrgId) {
+    hasPermissionRef.current = hasPermission;
+  }, [hasPermission]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('secureflow_access_token');
+    if (!token || !isAuthenticated) {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
       if (eventSourceRef.current) {
+        eventSourceRef.current.onopen = null;
+        eventSourceRef.current.onerror = null;
+        eventSourceRef.current.onmessage = null;
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
@@ -35,70 +49,97 @@ export const RealtimeEventsProvider: React.FC<{ children: React.ReactNode }> = (
       return;
     }
 
-    const token = localStorage.getItem('secureflow_access_token');
-    if (!token) return;
-
     let isMounted = true;
 
-    const connectSSE = () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
+    const cleanupExistingConnection = () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
+      if (eventSourceRef.current) {
+        eventSourceRef.current.onopen = null;
+        eventSourceRef.current.onerror = null;
+        eventSourceRef.current.onmessage = null;
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+    };
 
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-      const streamUrl = `${apiBase}/realtime/stream?token=${encodeURIComponent(token)}&org_id=${encodeURIComponent(activeOrgId)}`;
-      
+    const connectSSE = () => {
+      if (!isMounted) return;
+
+      cleanupExistingConnection();
+
+      const apiBase = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/+$/, '');
+      const targetOrgId =
+        authContext?.active_organization_id ||
+        activeOrgId ||
+        localStorage.getItem('secureflow_active_org_id') ||
+        '';
+      const orgParam = targetOrgId ? `&org_id=${encodeURIComponent(targetOrgId)}` : '';
+      const streamUrl = `${apiBase}/realtime/stream?token=${encodeURIComponent(token)}${orgParam}`;
+
       try {
         const es = new EventSource(streamUrl);
         eventSourceRef.current = es;
 
-        es.addEventListener('connected', () => {
+        const markConnected = () => {
           if (!isMounted) return;
           setStatus('connected');
           retryCountRef.current = 0;
-        });
+        };
 
-        es.addEventListener('ping', () => {
-          if (!isMounted) return;
-          setStatus('connected');
-        });
+        // 1. Native onopen handler
+        es.onopen = markConnected;
 
-        es.addEventListener('message', (event) => {
-          if (!isMounted) return;
+        // 2. Open event listener
+        es.addEventListener('open', markConnected);
+
+        // 3. Custom "connected" event listener
+        es.addEventListener('connected', markConnected);
+
+        // 4. Heartbeat ping handler
+        es.addEventListener('ping', markConnected);
+
+        // 5. Domain event message handler
+        es.addEventListener('message', (event: MessageEvent) => {
+          markConnected();
           try {
             const data = JSON.parse(event.data);
             setLastEventTime(new Date());
 
             const eventType = data.event_type as string;
+            const canReadAnalytics = hasPermissionRef.current ? hasPermissionRef.current('analytics.read') : false;
+            const canReadAudit = hasPermissionRef.current ? hasPermissionRef.current('audit.read') : false;
 
             if (eventType?.startsWith('Workflow')) {
               queryClient.invalidateQueries({ queryKey: ['workflows'] });
               queryClient.invalidateQueries({ queryKey: ['approvals'] });
-              if (hasPermission('analytics.read')) {
+              if (canReadAnalytics) {
                 queryClient.invalidateQueries({ queryKey: ['analytics'] });
               }
               queryClient.invalidateQueries({ queryKey: ['projects'] });
-              if (hasPermission('audit.read')) {
+              if (canReadAudit) {
                 queryClient.invalidateQueries({ queryKey: ['audit'] });
               }
             } else if (eventType?.startsWith('Project')) {
               queryClient.invalidateQueries({ queryKey: ['projects'] });
-              if (hasPermission('analytics.read')) {
+              if (canReadAnalytics) {
                 queryClient.invalidateQueries({ queryKey: ['analytics'] });
               }
-              if (hasPermission('audit.read')) {
+              if (canReadAudit) {
                 queryClient.invalidateQueries({ queryKey: ['audit'] });
               }
             } else if (eventType?.startsWith('Member') || eventType === 'RoleChanged') {
               queryClient.invalidateQueries({ queryKey: ['members'] });
               queryClient.invalidateQueries({ queryKey: ['auth'] });
-              if (hasPermission('audit.read')) {
+              if (canReadAudit) {
                 queryClient.invalidateQueries({ queryKey: ['audit'] });
               }
             } else if (eventType === 'NotificationCreated') {
               queryClient.invalidateQueries({ queryKey: ['notifications'] });
             } else if (eventType === 'AuditEventCreated') {
-              if (hasPermission('audit.read')) {
+              if (canReadAudit) {
                 queryClient.invalidateQueries({ queryKey: ['audit'] });
               }
             }
@@ -107,25 +148,42 @@ export const RealtimeEventsProvider: React.FC<{ children: React.ReactNode }> = (
           }
         });
 
+        // 6. Robust onerror handler
         es.onerror = () => {
           if (!isMounted) return;
-          setStatus('reconnecting');
-          es.close();
-          eventSourceRef.current = null;
 
-          // Exponential backoff reconnection
-          const delay = Math.min(1000 * Math.pow(2, retryCountRef.current), 10000);
-          retryCountRef.current += 1;
+          if (es.readyState === EventSource.CONNECTING) {
+            // Browser is natively attempting to reconnect
+            setStatus('reconnecting');
+            return;
+          }
 
-          reconnectTimeoutRef.current = setTimeout(() => {
-            if (isMounted) {
-              connectSSE();
-            }
-          }, delay);
+          if (es.readyState === EventSource.CLOSED) {
+            // Connection closed; schedule backoff reconnect
+            setStatus('reconnecting');
+            cleanupExistingConnection();
+
+            const delay = Math.min(1000 * Math.pow(2, retryCountRef.current), 15000);
+            retryCountRef.current += 1;
+
+            reconnectTimeoutRef.current = setTimeout(() => {
+              if (isMounted) {
+                connectSSE();
+              }
+            }, delay);
+          }
         };
       } catch (err) {
         if (!isMounted) return;
         setStatus('reconnecting');
+
+        const delay = Math.min(1000 * Math.pow(2, retryCountRef.current), 15000);
+        retryCountRef.current += 1;
+        reconnectTimeoutRef.current = setTimeout(() => {
+          if (isMounted) {
+            connectSSE();
+          }
+        }, delay);
       }
     };
 
@@ -133,15 +191,9 @@ export const RealtimeEventsProvider: React.FC<{ children: React.ReactNode }> = (
 
     return () => {
       isMounted = false;
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
-      }
+      cleanupExistingConnection();
     };
-  }, [isAuthenticated, activeOrgId, queryClient, hasPermission]);
+  }, [isAuthenticated, authContext?.active_organization_id, activeOrgId, queryClient]);
 
   return (
     <RealtimeEventsContext.Provider value={{ status, lastEventTime }}>
@@ -151,3 +203,4 @@ export const RealtimeEventsProvider: React.FC<{ children: React.ReactNode }> = (
 };
 
 export const useRealtime = () => useContext(RealtimeEventsContext);
+
