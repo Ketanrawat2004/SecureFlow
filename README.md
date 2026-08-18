@@ -2,17 +2,20 @@
 
 <div align="center">
 
-![SecureFlow Banner](https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&auto=format&fit=crop&q=80)
+<img src="docs/assets/dashboard.png" alt="SecureFlow - Enterprise Access Governance & Multi-Stage Workflow Authorization Hub" width="100%" style="border-radius: 12px; box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3); border: 1px solid #e2e8f0;" />
 
-**Enterprise Access Governance, Multi-Stage Workflow Authorization & Compliance Audit Platform**
+<br/><br/>
 
-### 🚀 Live Production Deployment
-### 👉 [https://secureflow.duckdns.org](https://secureflow.duckdns.org) 👈
+### ⚡ Enterprise Access Governance • Zero-Trust Workflow Authorization • Tamper-Evident Security Ledger
 
-[![Production Live](https://img.shields.io/badge/Production%20Website-secureflow.duckdns.org-2ea44f?style=for-the-badge&logo=google-chrome&logoColor=white)](https://secureflow.duckdns.org)
-[![HTTPS Secured](https://img.shields.io/badge/HTTPS-Let's%20Encrypt%20SSL-green?style=for-the-badge&logo=letsencrypt&logoColor=white)](https://secureflow.duckdns.org)
-[![CI Pipeline](https://img.shields.io/badge/CI%20Pipeline-Passing-success?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/Ketanrawat2004/SecureFlow/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://opensource.org/licenses/MIT)
+**A modern, production-grade cloud platform engineered to govern high-impact engineering operations with sequential multi-role verification gates, real-time Server-Sent Events (SSE), and an immutable compliance audit trail.**
+
+<br/>
+
+[![Live Production](https://img.shields.io/badge/🚀%20Live%20Production%20Website-secureflow.duckdns.org-00C781?style=for-the-badge&logo=google-chrome&logoColor=white)](https://secureflow.duckdns.org)
+[![SSL Secured](https://img.shields.io/badge/🔒%20HTTPS-Let's%20Encrypt%20SSL-0052CC?style=for-the-badge&logo=letsencrypt&logoColor=white)](https://secureflow.duckdns.org)
+[![CI Pipeline](https://img.shields.io/badge/⚡%20CI%20Pipeline-Passing-success?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/Ketanrawat2004/SecureFlow/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/📜%20License-MIT-F59E0B?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 <br/>
 
@@ -28,35 +31,38 @@
 
 <br/>
 
-🌐 **[Open Live Website](https://secureflow.duckdns.org)** • 📖 **[Architecture Guide](docs/ARCHITECTURE.md)** • 📑 **[API Reference](docs/API_REFERENCE.md)** • 🔐 **[Security Posture](docs/SECURITY.md)**
+👉 **[Launch Live Demo](https://secureflow.duckdns.org)** 👈 • 📖 **[Architecture Guide](docs/ARCHITECTURE.md)** • 📑 **[API Reference](docs/API_REFERENCE.md)** • 🔐 **[Security Posture](docs/SECURITY.md)**
 
 </div>
 
 ---
 
 > [!TIP]
-> **Live Production Website**: SecureFlow is fully deployed and active at **[https://secureflow.duckdns.org](https://secureflow.duckdns.org)** with HTTPS (Let's Encrypt SSL), Google SSO authentication, real-time Server-Sent Events, and interactive 1-Click RBAC Role Switchers.
+> **🌐 Try the Live Deployment**: SecureFlow is fully active in production at **[https://secureflow.duckdns.org](https://secureflow.duckdns.org)** with HTTPS (Let's Encrypt SSL), Google SSO OAuth 2.0 authentication, real-time unbuffered Server-Sent Events, and interactive 1-Click RBAC Role Switchers.
 
 ---
 
 ## 📖 Table of Contents
 
 - [🌐 Live Production Website](#-live-production-website)
-- [Executive Overview](#-executive-overview)
-- [System Architecture](#-system-architecture)
-- [Key Features](#-key-features)
-- [Technology Stack](#-technology-stack)
-- [Pre-Seeded Demo Personas](#-pre-seeded-demo-personas)
-- [Google OAuth 2.0 & SSO Configuration](#-google-oauth-20--sso-configuration)
-- [Getting Started & Deployment](#-getting-started--deployment)
+- [🖥️ Dashboard Feature Breakdown](#️-dashboard-feature-breakdown)
+- [🔒 Executive Overview](#-executive-overview)
+- [🏗️ System Architecture](#️-system-architecture)
+- [🔄 Zero-Trust Approval Lifecycle](#-zero-trust-approval-lifecycle)
+- [⚡ Key Features](#-key-features)
+- [🛡️ Granular RBAC Permissions Matrix](#️-granular-rbac-permissions-matrix)
+- [🛠️ Technology Stack](#️-technology-stack)
+- [👥 Pre-Seeded Demo Personas](#-pre-seeded-demo-personas)
+- [🔑 Google OAuth 2.0 & SSO Configuration](#-google-oauth-20--sso-configuration)
+- [🚀 Getting Started & Deployment](#-getting-started--deployment)
   - [Option 1: Production Cloud Deployment (DuckDNS + Nginx + HTTPS)](#option-1-production-cloud-deployment-duckdns--nginx--https)
   - [Option 2: Docker Compose (Local Multi-Container Stack)](#option-2-docker-compose-local-multi-container-stack)
   - [Option 3: Standalone Local Development (Offline Sandbox)](#option-3-standalone-local-development-offline-sandbox)
-- [Testing & Quality Assurance](#-testing--quality-assurance)
-- [Security & Compliance Posture](#-security--compliance-posture)
-- [Project Directory Structure](#-project-directory-structure)
-- [API Reference Summary](#-api-reference-summary)
-- [License](#-license)
+- [🧪 Testing & Quality Assurance](#-testing--quality-assurance)
+- [🔐 Security & Compliance Posture](#-security--compliance-posture)
+- [📂 Project Directory Structure](#-project-directory-structure)
+- [📑 API Reference Summary](#-api-reference-summary)
+- [📜 License](#-license)
 
 ---
 
@@ -80,6 +86,39 @@ SecureFlow is deployed in production and publicly accessible:
    - **Google SSO**: Click **Continue with Google** for instant OpenID Connect login.
    - **1-Click Dev Role Switcher**: Click on any of the demo persona cards (**Owner**, **Admin**, **Developer**, **Auditor**, **Viewer**) to test distinct RBAC access levels instantly.
 4. Experience real-time approval pipelines, workflow governance, live SSE event streams, operational KPI analytics, and compliance audit logs.
+
+---
+
+## 🖥️ Dashboard Feature Breakdown
+
+The SecureFlow Command Center provides instant visibility and zero-friction control over organization-wide engineering access:
+
+```text
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  SecureFlow > Overview           [ SIMULATE: Owner | Admin | Developer | Auditor | Viewer ]  LIVE │
+├──────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  Good morning, KETAN [DEVELOPER]                                     [+ New Workflow] [New Proj] │
+│  Engineering governance, verification pipelines, and compliance audit trail                      │
+│                                                                                                  │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────┐  │
+│  │ Pending Approvals│  │ Active Pipelines │  │ 7-Day Pass Rate  │  │ Average Turnaround       │  │
+│  │ 1 requires review│  │ 2 in flight      │  │ 100% compliance  │  │ 2.7h Stage SLA           │  │
+│  └──────────────────┘  └──────────────────┘  └──────────────────┘  └──────────────────────────┘  │
+│                                                                                                  │
+│  RECENT WORKFLOWS                                                SECURITY LEDGER                 │
+│  • KETAN RAWAT                    [INFRA] [HIGH]     [● APPROVED]  workflow.approved (04:49 PM)  │
+│  • Production Deployment - Pay... [PAY]   [HIGH]     [● PENDING]   workflow.created  (04:48 PM)  │
+│  • PostgreSQL 16 Partitioning...  [INFRA] [CRITICAL] [● APPROVED]  workflow.created  (04:50 PM)  │
+│  • Security Review - OAuth2...    [DEV]   [MEDIUM]   [● REVISE]    workflow.approved (06:50 PM)  │
+│  • Emergency Egress Firewall Rule [ZT]    [CRITICAL] [● EXECUTED]  workflow.changes  (01:50 AM)  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+- 🎛️ **1-Click RBAC Role Simulation**: Instant switcher in the top bar to toggle between `Owner`, `Admin`, `Developer`, `Auditor`, and `Viewer` personas without logging out.
+- 🟢 **Live SSE Stream Heartbeat**: Real-time event subscription keeps pipeline states, review queues, and audit entries synchronized with zero polling.
+- 📊 **Executive KPI Gauges**: Real-time tracking of pending approval queues, in-flight pipelines, compliance pass rates, and SLA turnaround duration.
+- 🚦 **Risk-Classified Workflow Matrix**: Dynamic risk tags (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`) with sequential stage status indicators (`PENDING APPROVAL`, `APPROVED`, `CHANGES REQUESTED`, `EXECUTED`).
+- 📜 **Live Security Ledger Feed**: Streaming tamper-evident event log capturing actor identities, timestamps, and workflow identifiers.
 
 ---
 
@@ -152,6 +191,33 @@ flowchart TD
 
 ---
 
+## 🔄 Zero-Trust Approval Lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Dev as 👩‍💻 Developer (Elena / Marcus)
+    participant UI as 🖥️ SecureFlow Frontend
+    participant API as ⚡ FastAPI Backend
+    participant Kafka as 📨 Apache Kafka
+    participant Worker as 🤖 Audit / Alert Worker
+    actor Admin as 👨‍💼 Approver (Alex / Sarah)
+
+    Dev->>UI: Submit Production Migration Workflow (Risk: High)
+    UI->>API: POST /api/v1/workflows
+    API->>Kafka: Publish Event: `workflow.created`
+    Kafka->>Worker: Consume `workflow.created` ➔ Persist Audit Ledger
+    API-->>UI: Real-Time SSE Broadcast: `WorkflowCreated`
+    Note over Admin,UI: Approver's dashboard updates in real time (<100ms)
+    Admin->>UI: Review Step & Click "Approve Gate"
+    UI->>API: POST /api/v1/workflows/{id}/decide (decision: approved)
+    API->>Kafka: Publish Event: `workflow.approved`
+    API-->>UI: Real-Time SSE Broadcast: `WorkflowApproved`
+    Note over Dev,UI: Developer sees instantaneous state transition to APPROVED
+```
+
+---
+
 ## ⚡ Key Features
 
 ### 1. Multi-Stage Sequential Approval Pipelines
@@ -161,12 +227,7 @@ flowchart TD
 - Decision reasons, review comments, and approval history tracking.
 
 ### 2. Multi-Tenant Role-Based Access Control (RBAC)
-- 5 pre-configured enterprise roles with strict server-side authorization enforcement across 15 permission scopes:
-  - **Owner**: Full organization governance, member invitations, role management, project creation, and workflow approval.
-  - **Admin**: Project management, member invitations, role assignment, and consequential workflow approval.
-  - **Developer**: Project creation, workflow authoring, and operational metric access.
-  - **Auditor**: Read-only compliance review, audit log search, and security event inspection.
-  - **Viewer**: Read-only observability across active projects and workflows.
+- 5 pre-configured enterprise roles with strict server-side authorization enforcement across 15 permission scopes.
 - Multi-tenancy isolation enforced through workspace memberships and `X-Organization-Id` context headers.
 
 ### 3. Dual-Mode Authentication & Google SSO
@@ -199,6 +260,22 @@ flowchart TD
 ### 8. Immutable Compliance Audit Ledger
 - Complete tamper-evident record of all security-sensitive actions with actor email, IP address, timestamp, resource ID, and full JSON payload context.
 - Multi-criteria filtering by action category, actor, date range, and resource type.
+
+---
+
+## 🛡️ Granular RBAC Permissions Matrix
+
+| Capability / Scope | 👑 Owner | 🛡️ Admin | 💻 Developer | 🔍 Auditor | 👁️ Viewer |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Workspace Settings & Billing** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Manage & Assign Member Roles** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Create & Configure Projects** | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **Author & Submit Workflows** | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **Approve Critical Gates** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Peer Review Developer Gates** | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **Inspect Immutable Audit Ledger**| ✅ | 🔍 Search | ❌ | ✅ Full | ❌ |
+| **Export Compliance Audit Reports**| ✅ | ❌ | ❌ | ✅ Full | ❌ |
+| **View Operational KPI Analytics** | ✅ | ✅ | ✅ | ✅ | 👁️ Basic |
 
 ---
 
@@ -409,6 +486,7 @@ SecureFlow/
 │   ├── notification_worker.py# Generates in-app user alerts from domain events
 │   └── analytics_worker.py  # Aggregates metrics & invalidates Redis cache
 ├── docs/                    # Architecture, deployment, security, and API documentation
+│   └── assets/              # Product screenshots, banners, and visual assets
 ├── terraform/               # Cloud infrastructure IaC templates (VPC, RDS, ECS)
 ├── docker-compose.yml       # 9-container full topology configuration
 ├── docker-compose.prod.yml  # Production port-hardened compose override
